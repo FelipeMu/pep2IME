@@ -12,7 +12,8 @@ library(caret)
 library(pROC)
 
 ##########################
-# NOTA.: Al momento de ejectuar el script espera aproximadamente 10
+# NOTA.: Al momento de ejectuar el script esperar aproximadamente 15 [seg ]para ver los
+#        resultados
 ##########################
 
 #Lord Vader desea saber si los niveles de exigencia con que los distintos oficiales 
@@ -124,5 +125,16 @@ pruebaEzAnova <- ezANOVA(data = datosE,
                          type = 2,
                          return_aov = TRUE)
 print(pruebaEzAnova)
+
+# Se puede observar que el p-value retornado por la prueba de esfericidad de Mauchly
+# es 0.905, el cual supera en gran medida al nivel de significación establecido, es por
+# ello que se falla en rechazar la hipótesis nula en favor de la alternativa y por lo
+# tanto se puede concluir con 99% de confianza que las varianzas entre los grupos
+# son aproximadamente iguales.
+
+# Ya con las condiciones ya verificadas, se procede establecer las hipótesis a contrastar
+# con respecto a la prueba ezAnova:
+#H0: el puntaje promedio para los spacetroopers es igual por cada evaluador.
+#HA: el puntaje promedio para los spacetroopers es diferente en al menos un evaluador..
 
 
