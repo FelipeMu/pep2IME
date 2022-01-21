@@ -17,9 +17,9 @@ library(pROC)
 ##########################
 
 #Lord Vader desea saber si los niveles de exigencia con que los distintos oficiales 
-#evaluadores (instructor, capit·n, comandante y general) califican a los spacetroopers 
+#evaluadores (instructor, capit√°n, comandante y general) califican a los spacetroopers 
 #son similares, por lo que le ha solicitado estudiar si existen diferencias significativas 
-#en el promedio de la evaluaciÛn realizada por cada uno de los oficiales. El Lord Sith ha 
+#en el promedio de la evaluaci√≥n realizada por cada uno de los oficiales. El Lord Sith ha 
 #sido muy claro al solicitar un reporte de aquellos oficiales cuyas evaluaciones presenten
 #diferencias.
 
@@ -28,11 +28,11 @@ dir <- "~/../Desktop"
 base <- "Datos PEP 2.csv"
 arch <- file.path(dir, base)
 
-# Se realiza la lectura de los datos, se especifica el formato de codificaciÛn UTF-8
+# Se realiza la lectura de los datos, se especifica el formato de codificaci√≥n UTF-8
 datos <- read.csv2(arch, fileEncoding = "UTF-8")
 
-# Dado el enunciado, es posible observar que se est· pidiendo edentificar diferencias
-# entre grupos que eval˙an a spacetroopers, es por ello que serÌa adecuado llevar a cabo
+# Dado el enunciado, es posible observar que se est√° pidiendo edentificar diferencias
+# entre grupos que eval√∫an a spacetroopers, es por ello que ser√≠a adecuado llevar a cabo
 # una Prueba Anova de una via para muestras corelacionadas.
 
 # Para ello, se deben verificar una serie de condiciones:
@@ -42,26 +42,26 @@ datos <- read.csv2(arch, fileEncoding = "UTF-8")
 
 #2. Las mediciones son independientes al interior de cada grupo.
 
-#3. Se puede suponer razonablemente que la(s) poblaciÛn(es) de origen sigue(n) una 
-# distribuciÛn normal.
+#3. Se puede suponer razonablemente que la(s) poblaci√≥n(es) de origen sigue(n) una 
+# distribuci√≥n normal.
 
-#4. La matriz de varianzas-covarianzas es esfÈrica. Como explica Horn (2008, p. 1), 
-# esta condiciÛn establece que las varianzas entre los diferentes niveles de las
+#4. La matriz de varianzas-covarianzas es esf√©rica. Como explica Horn (2008, p. 1), 
+# esta condici√≥n establece que las varianzas entre los diferentes niveles de las
 # medidas repetidas deben ser iguales.
 
 #VERIFICACIONES:
 
-#verificaciÛn 1:
-# Como se puede observar la variable dependiente es numÈrica y se encuentra en la
+#verificaci√≥n 1:
+# Como se puede observar la variable dependiente es num√©rica y se encuentra en la
 # misma medida para que evaluador.
 
-#verificaciÛn 2:
+#verificaci√≥n 2:
 # Es razonable pensar que cada evaluador estudio a un spacetrooper de acuerdo
-# a su propio criterio, y es por ello que es lÛgico pensar que sus mediciones
+# a su propio criterio, y es por ello que es l√≥gico pensar que sus mediciones
 # fueran tomadas de forma independiente.
 
-#verificaciÛn 3: 
-# Para esta condiciÛn serÌa necesario hacer un estudio en base a los gr·ficos
+#verificaci√≥n 3: 
+# Para esta condici√≥n ser√≠a necesario hacer un estudio en base a los gr√°ficos
 # QQ:
 
 
@@ -72,7 +72,7 @@ eval_comandante <- datos["eval_comandante"]
 eval_general <- datos["eval_general"]
 
 
-#largos: se observan los largos para decidir el valor de type en la funciÛn ezanova
+#largos: se observan los largos para decidir el valor de type en la funci√≥n ezanova
 neval_instructor <- nrow(eval_instructor)
 neval_capitan <- nrow(eval_capitan)
 neval_comandante <- nrow(eval_comandante)
@@ -91,8 +91,8 @@ datosE <- datosE %>% pivot_longer(c("eval_instructor", "eval_capitan", "eval_com
 ) 
 
 
-# se procede a realizar los gr·ficos QQ para los distintos evaluador:
-#   ComprobciÛn   de   normalidad .
+# se procede a realizar los gr√°ficos QQ para los distintos evaluador:
+#   Comprobci√≥n   de   normalidad .
 g <-   ggqqplot(datosE, x = "puntaje_evaluacion", y = "Evaluadores", color = "Evaluadores") 
 g <-   g + facet_wrap (~  Evaluadores)
 g <-   g + rremove("x.ticks") + rremove("x.text") 
@@ -101,21 +101,21 @@ g <-   g + rremove("axis.title")
 print(g)
 
 
-# Se puede observar a travÈs de las gr·ficas de las observaciones realizadas por
-# cada evaluador efectivamente siguen una distribuciÛn normal y existen una cantidad
-# muy mÌnima de valores atÌpicos, por lo que se decide avanzar con cautela
+# Se puede observar a trav√©s de las gr√°ficas de las observaciones realizadas por
+# cada evaluador efectivamente siguen una distribuci√≥n normal y existen una cantidad
+# muy m√≠nima de valores at√≠picos, por lo que se decide avanzar con cautela
 # y definir un nivel de significancia de alpha = 0.01. 
 alfa <- 0.01
 
 
-#verificaciÛn 4:
-# Para la comprobaciÛn de esta condiciÛn, la funciÛn ezAnova() entrega el resultado de la 
+#verificaci√≥n 4:
+# Para la comprobaci√≥n de esta condici√≥n, la funci√≥n ezAnova() entrega el resultado de la 
 # Prueba de esfericidad de Mauchly.
 
 # Antes de seguir avanzando se establecen se establecen las condiciones a constrastar para
 # la prueba de esfericidad de Mauchly.
 #H0: las varianzas-covarianzas de las k muestras son iguales para los grupos.
-#HA: al menos una de las muestras tiene varianza-covarianza diferente a alguna de los dem·s grupos. 
+#HA: al menos una de las muestras tiene varianza-covarianza diferente a alguna de los dem√°s grupos. 
 datosE$Evaluadores <- factor(datosE$Evaluadores )
 cat("\n\nProcedimiento ANOVA usando ezANOVA\n\n")
 pruebaEzAnova <- ezANOVA(data = datosE,
@@ -127,24 +127,24 @@ pruebaEzAnova <- ezANOVA(data = datosE,
 print(pruebaEzAnova)
 
 # Se puede observar que el p-value retornado por la prueba de esfericidad de Mauchly
-# es 0.905, el cual supera en gran medida al nivel de significaciÛn establecido, es por
-# ello que se falla en rechazar la hipÛtesis nula en favor de la alternativa y por lo
+# es 0.905, el cual supera en gran medida al nivel de significaci√≥n establecido, es por
+# ello que se falla en rechazar la hip√≥tesis nula en favor de la alternativa y por lo
 # tanto se puede concluir con 99% de confianza que las varianzas entre los grupos
 # son aproximadamente iguales.
 
-# Ya con las condiciones ya verificadas, se procede establecer las hipÛtesis a contrastar
+# Ya con las condiciones ya verificadas, se procede establecer las hip√≥tesis a contrastar
 # con respecto a la prueba ezAnova:
 #H0: el puntaje promedio para los spacetroopers es igual por cada evaluador.
 #HA: el puntaje promedio para los spacetroopers es diferente en al menos un evaluador.
 
-#CONLCUSI”N
-# Observando los resultados retornados por ezAnova en las lÌneas anteriores, se puede
+#CONLCUSI√ìN
+# Observando los resultados retornados por ezAnova en las l√≠neas anteriores, se puede
 # observar que el p-value=0.09 aproximadamente, un valor por encima del nivel de
-# signifcancia establecido, lo cual indica que no se rechaza la hipÛtesis nula y por
+# signifcancia establecido, lo cual indica que no se rechaza la hip√≥tesis nula y por
 # lo tanto se peude concluir con 99% de confianza que el promedio de lospuntajes 
 # establecidos por cada evaluador son similares.
 
-#Gr·fico del tamaÒo del efecto.
+#Gr√°fico del tama√±o del efecto.
 g3 <- ezPlot(data = datosE , 
              dv = puntaje_evaluacion,
              wid = spacetrooper, 
@@ -154,8 +154,8 @@ g3 <- ezPlot(data = datosE ,
 print(g3)
 
 
-# Adicionalmente, se puede realizar el procedimiento post-hoc con el ˙nico
-# fin de apoyar a la conclusiÛn descrita anteriormente:
+# Adicionalmente, se puede realizar el procedimiento post-hoc con el √∫nico
+# fin de apoyar a la conclusi√≥n descrita anteriormente:
 
 # Se puede observar que los p-values para las combinaciones de todos los
 # evaluadores es mayor al nivel de significancia, lo que confirma que
