@@ -105,7 +105,7 @@ print(g)
 # cada evaluador efectivamente siguen una distribución normal y existen una cantidad
 # muy mínima de valores atípicos, por lo que se decide avanzar con cautela
 # y definir un nivel de significancia de alpha = 0.01. 
-
+alfa <- 0.01
 
 
 #verificación 4:
@@ -135,6 +135,43 @@ print(pruebaEzAnova)
 # Ya con las condiciones ya verificadas, se procede establecer las hipótesis a contrastar
 # con respecto a la prueba ezAnova:
 #H0: el puntaje promedio para los spacetroopers es igual por cada evaluador.
-#HA: el puntaje promedio para los spacetroopers es diferente en al menos un evaluador..
+#HA: el puntaje promedio para los spacetroopers es diferente en al menos un evaluador.
+
+#CONLCUSIÓN
+# Observando los resultados retornados por ezAnova en las líneas anteriores, se puede
+# observar que el p-value=0.09 aproximadamente, un valor por encima del nivel de
+# signifcancia establecido, lo cual indica que no se rechaza la hipótesis nula y por
+# lo tanto se peude concluir con 99% de confianza que el promedio de lospuntajes 
+# establecidos por cada evaluador son similares.
+
+#Gráfico del tamaño del efecto.
+g3 <- ezPlot(data = datosE , 
+             dv = puntaje_evaluacion,
+             wid = spacetrooper, 
+             between = Evaluadores,
+             y_lab = "puntaje", 
+             x = Evaluadores)
+print(g3)
+
+
+# Adicionalmente, se puede realizar el procedimiento post-hoc con el único
+# fin de apoyar a la conclusión descrita anteriormente:
+
+# Se puede observar que los p-values para las combinaciones de todos los
+# evaluadores es mayor al nivel de significancia, lo que confirma que
+# no hay diferencias significativas en los puntajes promedios de cada
+# evaluador.
+
+#Procedimiento ANOVA con aov ().
+cat(" Procedimiento    ANOVA    usando    aov \ n\ n") 
+pruebaAnova <- aov(puntaje_evaluacion ~ Evaluadores, data = datosE) 
+print(summary(pruebaAnova))
+
+#Prueba HSD de Tukey .
+post_hoc <- TukeyHSD(pruebaAnova,
+                     "Evaluadores",
+                     ordered = TRUE,
+                     conf.level = 1 - alfa)
+print(post_hoc)
 
 
