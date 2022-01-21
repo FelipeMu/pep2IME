@@ -11,24 +11,28 @@ library(lmtest)
 library(caret)
 library(pROC)
 
+##################################
+########### PREGUNTA 1 ########### 
+##################################
+# Lord Vader desea saber si los niveles de exigencia con que los distintos oficiales evaluadores
+# (instructor, capit√°n, comandante y general) califican a los spacetroopers son similares,
+# por lo que le ha solicitado estudiar si existen diferencias significativas en el promedio
+# de la evaluaci√≥n realizada por cada uno de los oficiales.
+# El Lord Sith ha sido muy claro al solicitar un reporte de aquellos oficiales
+# cuyas evaluaciones presenten diferencias.
 
-#Lord Vader desea saber si los niveles de exigencia con que los distintos oficiales 
-#evaluadores (instructor, capit·n, comandante y general) califican a los spacetroopers 
-#son similares, por lo que le ha solicitado estudiar si existen diferencias significativas 
-#en el promedio de la evaluaciÛn realizada por cada uno de los oficiales. El Lord Sith ha 
-#sido muy claro al solicitar un reporte de aquellos oficiales cuyas evaluaciones presenten
-#diferencias.
+# Desarrollo:
 
 #Se especifica y almacena la ruta del directorio de la base de datos.
 dir <- "~/../Desktop"
 base <- "Datos PEP 2.csv"
 arch <- file.path(dir, base)
 
-# Se realiza la lectura de los datos, se especifica el formato de codificaciÛn UTF-8
+# Se realiza la lectura de los datos, se especifica el formato de codificaci√≥n UTF-8
 datos <- read.csv2(arch, fileEncoding = "UTF-8")
 
-# Dado el enunciado, es posible observar que se est· pidiendo edentificar diferencias
-# entre grupos que eval˙an a spacetroopers, es por ello que serÌa adecuado llevar a cabo
+# Dado el enunciado, es posible observar que se est√° pidiendo edentificar diferencias
+# entre grupos que eval√∫an a spacetroopers, es por ello que ser√≠a adecuado llevar a cabo
 # una Prueba Anova de una via para muestras corelacionadas.
 
 # Para ello, se deben verificar una serie de condiciones:
@@ -38,26 +42,26 @@ datos <- read.csv2(arch, fileEncoding = "UTF-8")
 
 #2. Las mediciones son independientes al interior de cada grupo.
 
-#3. Se puede suponer razonablemente que la(s) poblaciÛn(es) de origen sigue(n) una 
-# distribuciÛn normal.
+#3. Se puede suponer razonablemente que la(s) poblaci√≥n(es) de origen sigue(n) una 
+# distribuci√≥n normal.
 
-#4. La matriz de varianzas-covarianzas es esfÈrica. Como explica Horn (2008, p. 1), 
-# esta condiciÛn establece que las varianzas entre los diferentes niveles de las
+#4. La matriz de varianzas-covarianzas es esf√©rica. Como explica Horn (2008, p. 1), 
+# esta condici√≥n establece que las varianzas entre los diferentes niveles de las
 # medidas repetidas deben ser iguales.
 
 #VERIFICACIONES:
 
-#verificaciÛn 1:
-# Como se puede observar la variable dependiente es numÈrica y se encuentra en la
+#verificaci√≥n 1:
+# Como se puede observar la variable dependiente es num√©rica y se encuentra en la
 # misma medida para que evaluador.
 
-#verificaciÛn 2:
+#verificaci√≥n 2:
 # Es razonable pensar que cada evaluador estudio a un spacetrooper de acuerdo
-# a su propio criterio, y es por ello que es lÛgico pensar que sus mediciones
+# a su propio criterio, y es por ello que es l√≥gico pensar que sus mediciones
 # fueran tomadas de forma independiente.
 
-#verificaciÛn 3: 
-# Para esta condiciÛn serÌa necesario hacer un estudio en base a los gr·ficos
+#verificaci√≥n 3: 
+# Para esta condici√≥n ser√≠a necesario hacer un estudio en base a los gr√°ficos
 # QQ:
 
 
@@ -79,8 +83,8 @@ datosE <- datosE %>% pivot_longer(c("eval_instructor", "eval_capitan", "eval_com
 ) 
 
 
-# se procede a realizar los gr·ficos QQ para los distintos evaluador:
-#   ComprobciÛn   de   normalidad .
+# se procede a realizar los gr√°ficos QQ para los distintos evaluador:
+#   Comprobci√≥n   de   normalidad .
 g <-   ggqqplot(datosE, x = "puntaje Evaluacion", y = "Evaluadores", color = "Evaluadores") 
 g <-   g + facet_wrap (~  Evaluadores)
 g <-   g + rremove("x.ticks") + rremove("x.text") 
@@ -88,12 +92,86 @@ g <-   g + rremove("y.ticks") + rremove("y.text")
 g <-   g + rremove("axis.title")
 print(g)
 
-# Se puede observar a travÈs de las gr·ficas que las observaciones realizadas por
-# cada evaluador efectivamente siguen una distribuciÛn normal y existen una cantidad
-# muy mÌnima de valores atÌpicos. Por lo que se avanza con cautela y se define un 
+# Se puede observar a trav√©s de las gr√°ficas que las observaciones realizadas por
+# cada evaluador efectivamente siguen una distribuci√≥n normal y existen una cantidad
+# muy m√≠nima de valores at√≠picos. Por lo que se avanza con cautela y se define un 
 # alpha=0.01
 shapiro.test(datos[["eval_instructor"]])
 shapiro.test(datos[["eval_instructor"]])
 shapiro.test(datos[["eval_instructor"]])
 shapiro.test(datos[["eval_instructor"]])
 
+
+
+
+
+##################################
+########### PREGUNTA 2 ########### 
+##################################
+# A fin de determinar si es necesario establecer programas de entrenamiento diferenciados para clones y reclutas,
+# Lord Vader quiere saber si es posible distinguir entre ambas clases de soldados con los datos actuales.
+# Para ello, ha solicitado evaluar un modelo clasificador que contemple entre 2 y 5 variables predictoras. Considere que, para ser aceptable, el modelo:
+# ‚Ä¢ Debe lograr una exactitud (accuracy) de al menos 0,8 en datos de prueba
+# ‚Ä¢ No puede considerar casos con demasiada influencia (considerando la distancia de Cook)
+# ‚Ä¢ No debe presentar autocorrelaci√≥n (usando la prueba de Durbin-Watson para un retardo y un nivel de significaci√≥n Œ± = .01)
+# ‚Ä¢ No debe presentar multicolinealidad severa (considerando el factor de inflaci√≥n de la varianza, con un VIF promedio inferior a 1,03).
+# Considere la semilla 4666 para obtener una muestra de 400 datos, 80% de los cuales ser√°n empleados para ajustar el modelo y el 20% restante, para evaluarlo.
+
+# Desarrollo:
+
+# Establecer la semilla y el alfa
+set.seed(4666)
+alpha <- 0.01
+
+# Se separan los conjuntos de entrenamiento y prueba
+n <- 400 # 400 datos
+n_entrenamiento <- floor(0.8 * n)
+
+datosMuestra <- sample_n(datos,
+                         size = n,
+                         replace = FALSE) # Obtener una muestra de 400 datos.
+
+# Convertir los datos string a factores
+datosMuestra <- datosMuestra %>% mutate_if(is.character,as.factor)
+
+# Obtener la muestra del tama√±o pedido (400 datos)
+muestra <- sample.int(n = n,
+                      size = n_entrenamiento,
+                      replace = FALSE)
+entrenamiento <- datosMuestra[muestra, ] # 80% para ajustar el modelo
+prueba <- datosMuestra[-muestra, ] # 20% restante para evaluarlo
+
+
+# Obtener las mejores variables predictoras (de 2 a 5)
+mejorSubconjunto <- regsubsets(es_clon ~ ., # Buscamos predecir si es clon o recluta
+                               data = datosMuestra,
+                               nbest = 1, # determinar 1 modelo
+                               nvmax = 5, # m√°ximo de cinco variables predictoras
+                               force.in = NULL,
+                               force.out = NULL,
+                               method = "exhaustive")
+
+resumen <- summary(mejorSubconjunto)
+print(resumen)
+
+# Obtener el n√∫mero de predictores recomendado
+which.max(resumen$adjr2)
+# El n√∫mero de predictores recomendado fue 5.
+# Obtener los cinco predictores recomendados:
+print(resumen$which[5,])
+
+# Luego, los cinco mejores predictores son:
+# estatura
+# peso
+# imc
+# velocidad
+# agilidad
+
+# Crear un modelo ajustado de RLM basado en estos predictores, utilizando los datos de entrenamiento
+rlm <- glm(as.numeric(es_clon) ~ estatura + peso + imc + velocidad + agilidad,
+           family = binomial(link = "logit"),
+           data = entrenamiento)
+summary(rlm)
+
+# Ahora que tenemos el modelo inicial, falta ajustarlo.
+# Comprobar si no hay multicolinealidad.
