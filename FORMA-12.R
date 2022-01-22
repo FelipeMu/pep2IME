@@ -181,6 +181,199 @@ print(post_hoc)
 
 
 
+##################################
+########### PREGUNTA 2 ########### 
+##################################
+# A fin de determinar si es necesario establecer programas de entrenamiento diferenciados para clones y reclutas,
+# Lord Vader quiere saber si es posible distinguir entre ambas clases de soldados con los datos actuales.
+# Para ello, ha solicitado evaluar un modelo clasificador que contemple entre 2 y 5 variables predictoras. Considere que, para ser aceptable, el modelo:
+# • Debe lograr una exactitud (accuracy) de al menos 0,8 en datos de prueba
+# • No puede considerar casos con demasiada influencia (considerando la distancia de Cook)
+# • No debe presentar autocorrelación (usando la prueba de Durbin-Watson para un retardo y un nivel de significación α = .01)
+# • No debe presentar multicolinealidad severa (considerando el factor de inflación de la varianza, con un VIF promedio inferior a 1,03).
+# Considere la semilla 4666 para obtener una muestra de 400 datos, 80% de los cuales serán empleados para ajustar el modelo y el 20% restante, para evaluarlo.
+
+# Desarrollo:
+
+# Establecer la semilla y el alfa
+set.seed(4666)
+alpha <- 0.01
+
+# Se separan los conjuntos de entrenamiento y prueba
+n <- 400 # 400 datos
+n_entrenamiento <- floor(0.8 * n)
+
+datosMuestra <- sample_n(datos,
+                         size = n,
+                         replace = FALSE) # Obtener una muestra de 400 datos.
+
+# Convertir los datos string a factores
+datosMuestra <- datosMuestra %>% mutate_if(is.character,as.factor)
+
+# Obtener la muestra del tamaño pedido (400 datos)
+muestra <- sample.int(n = n,
+                      size = n_entrenamiento,
+                      replace = FALSE)
+entrenamiento <- datosMuestra[muestra, ] # 80% para ajustar el modelo
+prueba <- datosMuestra[-muestra, ] # 20% restante para evaluarlo
+
+
+# Obtener las mejores variables predictoras (de 2 a 5)
+mejorSubconjunto <- regsubsets(es_clon ~ ., # Buscamos predecir si es clon o recluta
+                               data = datosMuestra,
+                               nbest = 1, # determinar 1 modelo
+                               nvmax = 5, # máximo de cinco variables predictoras
+                               force.in = NULL,
+                               force.out = NULL,
+                               method = "exhaustive")
+
+resumen <- summary(mejorSubconjunto)
+print(resumen)
+
+# Obtener el número de predictores recomendado
+which.max(resumen$adjr2)
+# El número de predictores recomendado fue 5.
+# Obtener los cinco predictores recomendados:
+print(resumen$which[5,])
+
+# Luego, los cinco mejores predictores son:
+# estatura
+# peso
+# imc
+# velocidad
+# agilidad
+
+
+# Comprobar si no hay multicolinealidad entre los predictores.
+corCheck <- entrenamiento  %>% select(estatura, peso, imc, velocidad, agilidad)
+cor(corCheck)
+# Existe muy fuerte multicolinealidad en algunos predictores, lo cual debe ser
+# arreglado.
+
+# Crear un modelo ajustado de regresión lineal múltiple basado en estos predictores,
+# utilizando los datos de entrenamiento
+rlm <- lm(as.numeric(es_clon) ~ estatura + peso + imc + velocidad + agilidad,
+          data = entrenamiento)
+summary(rlm)
+
+# Función para evaluar condiciones de un modelo
+# Argumentos:
+# modelo: Modelo múltiple a analizar
+# Valor:
+# No hay retorno
+evaluarCondiciones <- function(rlm)
+{
+  # Independencia de los residuos
+  print("Prueba de Durbin-Watson")
+  print(durbinWatsonTest(rlm))
+  
+  # Se verifica normalidad de los residuos
+  print("Prueba de normalidad de Shapiro:")
+  print(shapiro.test(rlm$residuals))
+  
+  # Distancia de Cook
+  print("Distancia de Cook mayor a 1")
+  print(which(cooks.distance(rlm) > 1))
+  
+  # Se verifica homosteacidad de los residuos
+  print("Homosteacidad de los residuos:")
+  print(ncvTest(rlm))
+  
+  # Se comprueba multicolinealidad
+  vifs <- vif(rlm)
+  print("VIFs")
+  print(vifs)
+  
+  # Tolerancia
+  cat("\nTolerancia:", (1/vifs))
+  
+  # VIF medio
+  cat("\nVIF medio:", mean(vifs))
+}
+
+
+### PRUEBA 1
+evaluarCondiciones(rlm)
+
+# La prueba de Durbin-Watson se cumple con p=0.684
+# La prueba de Shapiro se cumple con p=0.2737
+# No hay residuos con distancia de Cook mayor a 1
+# La prueba de homosteacidad se cumple con p=0.25497
+# El VIF medio es 87945.01, lo cual es excesivo.
+
+# Para reducir el VIF medio se elimina un predictores con valor de VIF
+# excesivo.
+# Este predictor es: imc
+
+rlm_sin_imc <- update(rlm, . ~ . - imc)
+
+### PRUEBA 2
+evaluarCondiciones(rlm_sin_imc)
+
+# La prueba de Durbin-Watson se cumple con p=0.748
+# La prueba de Shapiro se cumple con p=0.1682
+# No hay residuos con distancia de Cook mayor a 1
+# La prueba de homosteacidad se cumple con p=0.6585
+# El VIF medio es 1.07665, lo cual es ligeramente más alto que lo esperado (1.03)
+
+# En ambos se cumplen todas las pruebas, el VIF medio es 1.07
+# El valor de VIF más alto ahora es el de estatura, con VIF=1.1304
+# Eliminar el predictor de estatura
+
+rlm_sin_imc_ni_estatura <- update(rlm_sin_imc, . ~ . - estatura)
+
+### PRUEBA 3
+evaluarCondiciones(rlm_sin_imc_ni_estatura)
+
+# La prueba de Durbin Watson se cumple con p=0.772
+# La prueba de Shapiro se cumple con p=0.1495
+# No hay residuos con distancia de Cook mayor a 1
+# La prueba de homostacidad se cumple con p=0.59
+# El VIF medio es 1.01, lo cual es un nivel aceptado.
+
+# Como se cumplen todas las condiciones, es momento de hacer predicciones.
+
+### Modelo final
+# Ajustar modelo usando validación cruzada de cinco pliegues
+rlm_final <- train(as.numeric(es_clon) ~ peso + velocidad + agilidad,
+                   data = entrenamiento,
+                   method = "lm",
+                   trControl = trainControl(method = "cv", number = 5))
+
+# Resumen del modelo
+print(summary(rlm_final))
+
+# Error cuadrático medio para datos de entrenamiento
+mse_entrenamiento <- rlm_final$results$RMSE
+print(mse_entrenamiento)
+
+# Predicciones para el conjunto de prueba
+predicciones <- predict(rlm_final, prueba)
+
+# Error cuadrático medio para datos de prueba
+error <- as.numeric(prueba[["es_clon"]]) - predicciones
+mse_prueba <- sqrt(mean(error ** 2))
+
+print(mse_prueba)
+
+# Evaluar exactitud
+umbral <- 1.5
+predicciones2 <- sapply(predicciones, function(p) ifelse(p>=umbral, 2, 1))
+predicciones2 <- factor(predicciones2)
+confusionMatrix(predicciones2, factor(as.numeric(prueba[["es_clon"]])))
+# La exactitud es de 0.925
+
+# En resumen, el valor del error cuadrático medio de los datos de la prueba
+# no varía significativamente con los del entrenamiento (0.2607 y 0.2767 respectivamente),
+# por lo que el modelo no está sobreajustado.
+
+# No hay residuos con Distancia de Cook superior a 1
+# La exactitud es de 0.925, lo cual es superior al 0.8.
+# No existe autocorrelación con un nivel de significación alfa=0.01
+# El VIF medio es 1.01
+# El modelo cumple todas las condiciones pedidas.
+
+
 
 #=======================
 #===== PREGUNTA 3 ======
@@ -230,10 +423,5 @@ print(post_hoc)
 
 #H0: no hay diferencia en el rendimiento de ambas aplicaciones (eficacia y eficiencia muy bastante similar).
 #HA: sí hay diferencia en el rendimiento de ambas aplicaciones.
-
-
-
-
-
 
 
