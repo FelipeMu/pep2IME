@@ -12,8 +12,8 @@ library(caret)
 library(pROC)
 
 ##########################
-# NOTA.: Al momento de ejectuar el script esperar aproximadamente 15 [seg ]para ver los
-#        resultados
+# NOTA.: Al momento de ejectuar el script para la pregunta 1 esperar aproximadamente 15 [seg] 
+#        para ver los resultados.
 ##########################
 
 
@@ -58,10 +58,10 @@ datos <- read.csv2(arch, fileEncoding = "UTF-8")
 
 #verificación 1:
 # Como se puede observar la variable dependiente es numérica y se encuentra en la
-# misma medida para que evaluador.
+# misma medida para cada evaluador.
 
 #verificación 2:
-# Es razonable pensar que cada evaluador estudio a un spacetrooper de acuerdo
+# Es razonable pensar que cada evaluador evalúo a un spacetrooper de acuerdo
 # a su propio criterio, y es por ello que es lógico pensar que sus mediciones
 # fueran tomadas de forma independiente.
 
@@ -77,7 +77,9 @@ eval_comandante <- datos["eval_comandante"]
 eval_general <- datos["eval_general"]
 
 
-#largos: se observan los largos para decidir el valor de type en la función ezanova
+# largos: se observan los largos para decidir el valor de type en la función ezanova
+# (se ocupa type=2: mismos largos todos los grupos)
+
 neval_instructor <- nrow(eval_instructor)
 neval_capitan <- nrow(eval_capitan)
 neval_comandante <- nrow(eval_comandante)
@@ -97,7 +99,7 @@ datosE <- datosE %>% pivot_longer(c("eval_instructor", "eval_capitan", "eval_com
 
 
 # se procede a realizar los gráficos QQ para los distintos evaluador:
-#   Comprobción   de   normalidad .
+#  Comprobación de normalidad .
 g <-   ggqqplot(datosE, x = "puntaje_evaluacion", y = "Evaluadores", color = "Evaluadores") 
 g <-   g + facet_wrap (~  Evaluadores)
 g <-   g + rremove("x.ticks") + rremove("x.text") 
@@ -109,7 +111,7 @@ print(g)
 # Se puede observar a través de las gráficas de las observaciones realizadas por
 # cada evaluador efectivamente siguen una distribución normal y existen una cantidad
 # muy mínima de valores atípicos, por lo que se decide avanzar con cautela
-# y definir un nivel de significancia de alpha = 0.01. 
+# y definir un nivel de significancia de alfa = 0.01. 
 alfa <- 0.01
 
 
@@ -117,7 +119,7 @@ alfa <- 0.01
 # Para la comprobación de esta condición, la función ezAnova() entrega el resultado de la 
 # Prueba de esfericidad de Mauchly.
 
-# Antes de seguir avanzando se establecen se establecen las condiciones a constrastar para
+# Antes de seguir avanzando se establecen las condiciones a constrastar para
 # la prueba de esfericidad de Mauchly.
 #H0: las varianzas-covarianzas de las k muestras son iguales para los grupos.
 #HA: al menos una de las muestras tiene varianza-covarianza diferente a alguna de los demás grupos. 
@@ -146,7 +148,7 @@ print(pruebaEzAnova)
 # Observando los resultados retornados por ezAnova en las líneas anteriores, se puede
 # observar que el p-value=0.09 aproximadamente, un valor por encima del nivel de
 # signifcancia establecido, lo cual indica que no se rechaza la hipótesis nula y por
-# lo tanto se peude concluir con 99% de confianza que el promedio de lospuntajes 
+# lo tanto se puede concluir con 99% de confianza que el promedio de los puntajes 
 # establecidos por cada evaluador son similares.
 
 #Gráfico del tamaño del efecto.
