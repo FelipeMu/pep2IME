@@ -16,6 +16,11 @@ library(pROC)
 #        resultados
 ##########################
 
+
+#=======================
+#===== PREGUNTA 1 ======
+#=======================
+
 #Lord Vader desea saber si los niveles de exigencia con que los distintos oficiales 
 #evaluadores (instructor, capitán, comandante y general) califican a los spacetroopers 
 #son similares, por lo que le ha solicitado estudiar si existen diferencias significativas 
@@ -173,5 +178,31 @@ post_hoc <- TukeyHSD(pruebaAnova,
                      ordered = TRUE,
                      conf.level = 1 - alfa)
 print(post_hoc)
+
+
+
+
+#=======================
+#===== PREGUNTA 3 ======
+#=======================
+
+# (9 puntos) Proponga un ejemplo novedoso (no mencionado en clase ni que aparezca 
+# en las lecturas dadas) en donde un estudio o experimento, relacionado con el 
+# sentir de los santiaguinos ante el aumento de la violencia de la delincuencia
+# necesite utilizar una prueba de suma de rangos de Wilcoxon (también llamada prueba
+# de Mann–Whitney–Wilcoxon o prueba U de Mann-Whitney debido a problemas con la 
+# escala de la variable dependiente en estudio. Indiqué cuáles serían las 
+# variables involucradas en su ejemplo (con sus respectivos niveles) y 
+# las hipótesis nula y alternativa a contrastar.
+
+#ejemplo:
+
+# La central de Policías De Investigaciones (PDI) desea conocer el miedo que sienten
+# las personas al salir por la noche (21:00 hacia adelante) ante el aumento de la 
+# violencia de la delicuencia. Para ello, han creado dos aplicaciones de celular
+# AppService1 y AppServce2 que tienen como objetivo pedir pedir presionando solo
+# un boton en caso de estar en una situación peligrosa. Es por esto que ha reunido
+# a 35 personas, 18 mujeres y 17 hombres, los cuales son asignados a dos grupos
+# de fora azarosa. 
 
 
